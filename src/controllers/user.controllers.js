@@ -30,11 +30,19 @@ const getOne = catchError(async(req, res) => {
 const update = catchError(async(req, res) => {
   const { id } = req.params
   const { first_name, last_name, email, password, birthday } = req.body
-  const user = await User.update(
-    {first_name, last_name, email, password, birthday},
-    {where: {id: id}, returning: true}
-  )
-  return res.json(user)
+  const [updatedCount, updatedUsers] = await User.update(
+    { first_name, last_name, email, password, birthday },
+    { where: { id: id }, returning: true }
+  );
+
+  // Check if at least the row is updated
+  if (updatedCount > 0 && updatedUsers.length > 0) {
+    const updatedUser = updatedUsers[0];
+    return res.json(updatedUser);
+  } else {
+    // Error when user doesn't exist
+    return res.status(404).json({ error: "Usuario no encontrado" });
+  }
 });
 
 module.exports = {
